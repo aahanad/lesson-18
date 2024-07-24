@@ -9,7 +9,8 @@ screen=pygame.display.set_mode((WIDTH,HEIGHT))
 pygame.display.set_caption("FLAPPY BIRD")
 bg=pygame.image.load("C:\Aahana\Game Dev 2\lesson8\Things\city.png")
 ground=pygame.image.load("C:\Aahana\Game Dev 2\lesson8\Things\ground.png")
-
+pipe_freq=1500
+last_pipe=pygame.time.get_ticks()-pipe_freq
 game=True
 ground_x=0
 class Flappy(pygame.sprite.Sprite):
@@ -50,10 +51,28 @@ class Flappy(pygame.sprite.Sprite):
             if self.index>=3:
                 self.index=0
             self.image=self.images[self.index]
+class Pipe (pygame.sprite.Sprite):
+    def __init__(self,x,y,pos):
+        super().__init__()
+        self.image=pygame.image.load("C:\Aahana\Game Dev 2\lesson8\Things\pipe.png")
+        self.index=0
+        self.rect=self.image.get_rect()
+        if pos==1:
+            self.image=pygame.transform.flip(self.image,False,True)
+            self.rect.bottomleft=x,y-180/2
+        if pos==-1:
+            self.rect.topleft=x,y+18/2
+    def update(self): 
+        self.rect.x-=5
+        if self.rect.x<0:
+            self.kill()         
 bird=Flappy(100,375)
 birdgroup=pygame.sprite.Group()
-birdgroup.add (bird) 
+birdgroup.add (bird)
+pipegroup=pygame.sprite.Group()
+clock=pygame.time.Clock() 
 while True:
+    clock.tick(60)
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
             pygame.quit()
@@ -63,13 +82,25 @@ while True:
     screen.blit(ground,(ground_x,680))
     birdgroup.draw(screen)
     birdgroup.update()
+    pipegroup.draw(screen)
     if bird.rect.bottom >680:
         game_over=True
         flying=False
 
-    if game_over==False:
+    if game_over==False and flying==True:
+        time_now=pygame.time.get_ticks()
+        if time_now-last_pipe>pipe_freq:
+            btm_pipe=Pipe(WIDTH,HEIGHT/2+random.randint(-100,100),-1)
+            top_pipe=Pipe(WIDTH,HEIGHT/2+random.randint(-100,100),1)
+            pipegroup.add(btm_pipe)
+            pipegroup.add(top_pipe)
+            last_pipe=time_now
         ground_x=ground_x-0.5
         if abs(ground_x)>35:
             ground_x=0
+        pipegroup.update()
 
     pygame.display.update()
+    #Homework:
+#You can try out the animation for your own game with the collected images
+#Build the score and display it on the screen
